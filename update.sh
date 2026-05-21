@@ -22,17 +22,17 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-ok()      { echo -e "${GREEN}  ✔  $1${NC}"; }
-warn()    { echo -e "${YELLOW}  ⚠  $1${NC}"; }
-err()     { echo -e "${RED}  ✘  $1${NC}"; }
+ok()      { echo -e "${GREEN}  [ok]   $1${NC}"; }
+warn()    { echo -e "${YELLOW}  [warn] $1${NC}"; }
+err()     { echo -e "${RED}  [err]  $1${NC}"; }
 info()    { echo -e "${CYAN}      $1${NC}"; }
 section() { echo -e "\n${BOLD}$1${NC}"; }
 
 # --- Ensure running as root ---
 if [ "$EUID" -ne 0 ]; then
   echo ""
-  err "This script must be run as root."
-  echo "      Please run: sudo bash update.sh"
+  echo "ERROR: This script must be run as root."
+  echo "       Please run: sudo bash update.sh"
   echo ""
   exit 1
 fi
@@ -343,21 +343,21 @@ echo ""
 echo "---------------------------------------------"
 echo " What changed:"
 if [ "$SEARXNG_UPDATED" = true ]; then
-  echo "   ✔  SearXNG        — updated to latest"
+  echo "   [ok]  SearXNG        — updated to latest"
 else
-  echo "   —  SearXNG        — already up to date"
+  echo "   [--]  SearXNG        — already up to date"
 fi
 if [ "$WEBUI_UPDATED" = true ]; then
-  echo "   ✔  Open WebUI     — updated to latest"
+  echo "   [ok]  Open WebUI     — updated to latest"
 else
-  echo "   —  Open WebUI     — already up to date"
+  echo "   [--]  Open WebUI     — already up to date"
 fi
 if [ "$PW_REBUILT" = true ] && [ "$PW_INSTALLED" = true ]; then
-  echo "   ✔  Playwright     — installed v${PW_VERSION}"
+  echo "   [ok]  Playwright     — installed v${PW_VERSION}"
 elif [ "$PW_REBUILT" = true ]; then
-  echo "   ✔  Playwright     — rebuilt to match Open WebUI v${PW_VERSION}"
+  echo "   [ok]  Playwright     — rebuilt to match Open WebUI v${PW_VERSION}"
 else
-  echo "   —  Playwright     — already up to date"
+  echo "   [--]  Playwright     — already up to date"
 fi
 echo "---------------------------------------------"
 echo ""

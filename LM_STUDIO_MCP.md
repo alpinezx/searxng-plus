@@ -6,7 +6,32 @@
 
 ## Connect SearXNG to LM Studio
 
-The setup script can generate your `mcp.json` automatically at the end of the install — just say yes when prompted. Or configure it manually:
+The setup script can generate your `mcp.json` automatically at the end of the install — just say yes when prompted. It will ask whether LM Studio is running on the same machine as SearXNG or on a different device on the network, and write the correct URL for you.
+
+To configure it manually, use whichever option matches your setup.
+
+**LM Studio on the same machine as SearXNG:**
+
+In LM Studio → **Developer tab** → `mcp.json`, replace the entire contents with:
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-searxng"
+      ],
+      "env": {
+        "SEARXNG_URL": "http://localhost:8081"
+      }
+    }
+  }
+}
+```
+
+**LM Studio on a different machine on the network** (e.g. a Windows PC connecting to a Ubuntu server or mini PC):
 
 In LM Studio → **Developer tab** → `mcp.json`, replace the entire contents with:
 
@@ -27,9 +52,7 @@ In LM Studio → **Developer tab** → `mcp.json`, replace the entire contents w
 }
 ```
 
-Replace `<your-ubuntu-machine-ip>` with the IP address from `hostname -I` on your Ubuntu machine — for example `http://192.168.1.50:8081`.
-
-> **Running LM Studio on the same machine as SearXNG?** Use `http://localhost:8081` instead of the LAN IP.
+Replace `<your-ubuntu-machine-ip>` with the LAN IP of the machine running SearXNG — run `hostname -I` on that machine to get it, for example `http://192.168.1.50:8081`.
 
 Save. Confirm `mcp/searxng` appears in the integrations panel with `searxng_web_search` and `web_url_read` tools active.
 
@@ -104,7 +127,7 @@ That's all you need. `searxng_web_search` finds pages. `fetch_readable` reads th
 The URL must go in the `"env"` block in `mcp.json` as `SEARXNG_URL`, not in the `"args"` array. Double-check the structure matches the example above.
 
 **LM Studio can't reach SearXNG:**
-`localhost` won't work from a Windows machine — you must use the Ubuntu machine's LAN IP address in `mcp.json`. Verify SearXNG is reachable from Windows by opening a browser and visiting `http://<your-ubuntu-machine-ip>:8081` before troubleshooting LM Studio further.
+If LM Studio is on a different machine, `localhost` won't work — you must use the LAN IP of the machine running SearXNG in `mcp.json`. Verify SearXNG is reachable by opening a browser on the LM Studio machine and visiting `http://<your-ubuntu-machine-ip>:8081` before troubleshooting further. If LM Studio and SearXNG are on the same machine, `localhost` is correct.
 
 **Tools not appearing after saving mcp.json:**
 Restart LM Studio, or toggle the integration off and back on in the Developer tab.
