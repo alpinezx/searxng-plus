@@ -3,7 +3,7 @@
 ## Using the uninstall script (recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/alpinezx/ubuntu-searxng-openwebui-playwright/refs/heads/main/uninstall.sh -o uninstall.sh && sudo bash uninstall.sh
+curl -fsSL https://raw.githubusercontent.com/alpinezx/searxng-plus/refs/heads/main/uninstall.sh -o uninstall.sh && sudo bash uninstall.sh
 ```
 
 The script detects what is currently installed and builds a menu based on what it finds. Each option asks for confirmation before doing anything. Options that no longer apply are removed automatically after each action.

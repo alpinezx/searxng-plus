@@ -1,8 +1,8 @@
-# SearXNG + Open WebUI + Playwright — Ubuntu Install
+# searxng-plus
 
 > **Ubuntu only.** This script has only been tested on Ubuntu and is built on Ubuntu/Debian-specific tooling (`apt-get`, Docker's Ubuntu repository). Other distributions are not supported.
 
-Automated setup script for a private local search engine (SearXNG), a self-hosted AI chat interface (Open WebUI), and a local Playwright browser service for high-quality web page extraction — all accessible across your local network.
+Automated setup script for a private local search engine (SearXNG), with optional Open WebUI and Playwright — all accessible across your local network.
 
 **SearXNG** is a self-hosted, privacy-respecting meta search engine. It queries Google, Bing, DuckDuckGo and others simultaneously, strips out all ads and tracking, and returns clean results — served entirely from your own machine.
 
@@ -32,24 +32,12 @@ Automated setup script for a private local search engine (SearXNG), a self-hoste
 Open a terminal and run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/alpinezx/ubuntu-searxng-openwebui-playwright/refs/heads/main/setup.sh -o setup.sh && sudo bash setup.sh
+curl -fsSL https://raw.githubusercontent.com/alpinezx/searxng-plus/refs/heads/main/setup.sh -o setup.sh && sudo bash setup.sh
 ```
 
 The script installs Docker, walks you through a short configuration menu, launches all three containers, and verifies everything is working — all in one go. No restart required.
 
 At the end, it prints your LAN IP with exact URLs for all services and the Playwright WebSocket URL to paste into Open WebUI.
-
----
-
-## Set Up Open WebUI
-
-See **[OPENWEBUI_SETUP.md](OPENWEBUI_SETUP.md)** for the full configuration walkthrough, including:
-
-- Adding API keys for OpenAI, Anthropic, Google, and OpenRouter
-- Configuring SearXNG web search and Playwright
-- Setting up web search per model
-- Setting Function Calling to Native
-- System prompt recommendations for reliable search
 
 ---
 
@@ -77,7 +65,7 @@ http://<your-ubuntu-machine-ip>:8081/search?q=%s
 When Open WebUI shows a "new version available" notification, run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/alpinezx/ubuntu-searxng-openwebui-playwright/refs/heads/main/update.sh -o update.sh && sudo bash update.sh
+curl -fsSL https://raw.githubusercontent.com/alpinezx/searxng-plus/refs/heads/main/update.sh -o update.sh && sudo bash update.sh
 ```
 
 The update script pulls the latest Open WebUI image, detects whether the internal Playwright version has changed, rebuilds the Playwright container if needed, and prints a summary of what was updated.
@@ -110,7 +98,7 @@ sudo systemctl restart docker
 
 ---
 
-## Further Reading
+## Guides & Reference
 
 - [Open WebUI Setup Guide](OPENWEBUI_SETUP.md)
 - [SearXNG Configuration](SEARXNG_CONFIG.md)
