@@ -1,25 +1,15 @@
-# Uninstall
+# Manual Uninstall
 
-## Using the uninstall script (recommended)
+If you prefer to remove things by hand rather than using the uninstall script, use the commands below.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/alpinezx/searxng-plus/refs/heads/main/uninstall.sh -o uninstall.sh && sudo bash uninstall.sh
-```
-
-The script detects what is currently installed and builds a menu based on what it finds. Each option asks for confirmation before doing anything. Options that no longer apply are removed automatically after each action.
-
----
-
-## Manual uninstall
-
-### Playwright only
+## Playwright only
 
 ```bash
 sudo docker rm -f playwright-chromium
 sudo docker rmi playwright-server:latest
 ```
 
-### Open WebUI only
+## Open WebUI only
 
 ```bash
 sudo docker stop open-webui
@@ -28,7 +18,7 @@ sudo docker rmi ghcr.io/open-webui/open-webui:main
 sudo rm -rf /root/open-webui-data
 ```
 
-### SearXNG only
+## SearXNG only
 
 ```bash
 sudo docker stop searxng
@@ -37,7 +27,7 @@ sudo docker rmi searxng/searxng
 sudo rm -rf /root/searxng-config
 ```
 
-### Docker
+## Docker
 
 ```bash
 sudo systemctl stop docker

@@ -98,6 +98,18 @@ sudo systemctl restart docker
 
 ---
 
+## Uninstall
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/alpinezx/searxng-plus/refs/heads/main/uninstall.sh -o uninstall.sh && sudo bash uninstall.sh
+```
+
+The script detects what is currently installed and presents a menu — remove individual services or everything at once. Each option asks for confirmation before doing anything.
+
+For manual removal commands, see [Uninstall manually](UNINSTALL.md).
+
+---
+
 ## Guides & Reference
 
 - [Open WebUI Setup Guide](OPENWEBUI_SETUP.md)
@@ -105,4 +117,3 @@ sudo systemctl restart docker
 - [LM Studio MCP Setup & Tips](LM_STUDIO_MCP.md)
 - [System Prompt](SYSTEM_PROMPT.md)
 - [Troubleshooting](TROUBLESHOOTING.md)
-- [Uninstall](UNINSTALL.md)
