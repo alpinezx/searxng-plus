@@ -2,7 +2,7 @@
 
 This system prompt is designed for use with Open WebUI and is particularly effective when web search and Playwright are enabled. It instructs the model to be persistent, thorough, and source-backed — rather than stopping at the first failed result or producing a fast but shallow answer.
 
-For a condensed version that covers the most impactful behaviours, see the [README](README.md#5-set-a-system-prompt-for-reliable-web-search-strongly-recommended).
+For a condensed version that covers the most impactful behaviours, see the [README](OPENWEBUI_SETUP.md#5-set-a-system-prompt-for-reliable-web-search).
 
 ---
 

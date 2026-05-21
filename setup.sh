@@ -44,6 +44,18 @@ echo " SearXNG + Open WebUI + Playwright Setup"
 echo " Ubuntu Edition"
 echo "============================================="
 echo ""
+echo " This script will install the following:"
+echo ""
+echo "   • Docker          — container runtime (required)"
+echo "   • SearXNG         — private search engine on port 8081"
+echo "   • Open WebUI      — self-hosted AI chat interface"
+echo "   • Playwright      — headless browser for web page extraction"
+echo ""
+echo " You will be asked how you want each service configured"
+echo " before anything is installed."
+echo ""
+read -p " Press Enter to continue or Ctrl+C to cancel..."
+echo ""
 
 MAX_RETRIES=3
 PLAYWRIGHT_PORT=3001
@@ -450,7 +462,7 @@ PW_VERSION=$(docker exec open-webui pip show playwright 2>/dev/null \
 
 if [ -z "$PW_VERSION" ]; then
   err "Could not detect Playwright version from Open WebUI container."
-  warn "Playwright will not be installed. Run: sudo bash add-playwright.sh"
+  warn "Playwright will not be installed. Run: sudo bash setup.sh"
   PW_FAILED=true
 else
   ok "Open WebUI is running Playwright v${PW_VERSION}."
@@ -469,7 +481,7 @@ if [ "$PW_FAILED" = false ]; then
   until docker pull "$PW_BASE_IMAGE"; do
     if [ $attempt -ge $MAX_RETRIES ]; then
       err "Failed to pull Playwright image after $MAX_RETRIES attempts."
-      warn "Playwright will not be installed. Run: sudo bash add-playwright.sh"
+      warn "Playwright will not be installed. Run: sudo bash setup.sh"
       PW_FAILED=true
       break
     fi
@@ -502,7 +514,7 @@ EOF
       "${PLAYWRIGHT_IMAGE_TAG}:latest" > /dev/null 2>&1
   else
     err "Failed to build local Playwright image."
-    warn "Playwright will not be installed. Run: sudo bash add-playwright.sh"
+    warn "Playwright will not be installed. Run: sudo bash setup.sh"
     PW_FAILED=true
   fi
 
@@ -580,7 +592,7 @@ else
   echo "---------------------------------------------"
   echo " Playwright was not installed."
   echo " Run this when ready:"
-  echo "   sudo bash add-playwright.sh"
+  echo "   sudo bash setup.sh"
   echo "---------------------------------------------"
 fi
 echo ""

@@ -43,6 +43,17 @@ echo " SearXNG + Open WebUI + Playwright"
 echo " Update — Ubuntu Edition"
 echo "============================================="
 echo ""
+echo " This script will check for and apply updates to:"
+echo ""
+echo "   • SearXNG         — pulls latest image, restarts if changed"
+echo "   • Open WebUI      — pulls latest image, restarts if changed"
+echo "   • Playwright      — rebuilds automatically if Open WebUI's"
+echo "                       internal version has changed"
+echo ""
+echo " Your data, settings and configuration are preserved."
+echo ""
+read -p " Press Enter to continue or Ctrl+C to cancel..."
+echo ""
 
 MAX_RETRIES=3
 INTERVAL=3
