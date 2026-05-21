@@ -1,4 +1,4 @@
-# searxng-plus
+# SearXNG-Plus
 
 > **Ubuntu only.** This script has only been tested on Ubuntu and is built on Ubuntu/Debian-specific tooling (`apt-get`, Docker's Ubuntu repository). Other distributions are not supported.
 
