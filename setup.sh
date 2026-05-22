@@ -546,9 +546,10 @@ if $INSTALL_SEARXNG; then
   echo ""
 
   if [[ "$gen_mcp" =~ ^[Yy]$ ]]; then
+    LAN_IP=$(hostname -I | awk '{print $1}')
     echo " Where will LM Studio be running?"
     echo "   1) This machine  — SearXNG URL will use localhost"
-    echo "   2) Another machine on the network — enter its IP address"
+    echo "   2) Another machine on the network — SearXNG URL will use $LAN_IP"
     echo ""
     while true; do
       read -p " Enter choice [1-2]: " lms_choice
@@ -559,21 +560,8 @@ if $INSTALL_SEARXNG; then
           break
           ;;
         2)
-          LAN_IP=$(hostname -I | awk '{print $1}')
-          echo ""
-          info "This machine's IP address is: $LAN_IP"
-          info "Enter the IP of the machine where LM Studio is running."
-          echo ""
-          while true; do
-            read -p " Enter the IP address of the machine running LM Studio: " lms_ip
-            if [[ "$lms_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              SEARXNG_URL="http://${lms_ip}:8081"
-              info "Using $SEARXNG_URL"
-              break
-            else
-              warn "Invalid IP address. Please enter a valid IPv4 address (e.g. 192.168.1.100)."
-            fi
-          done
+          SEARXNG_URL="http://${LAN_IP}:8081"
+          info "Using $SEARXNG_URL"
           break
           ;;
         *) warn "Invalid choice. Please enter 1 or 2." ;;
