@@ -6,7 +6,7 @@
 
 ## Connect SearXNG to LM Studio
 
-The setup script can generate your `mcp.json` automatically at the end of the install — just say yes when prompted. It will ask whether LM Studio is running on the same machine as SearXNG or on a different device on the network, and write the correct URL for you.
+The setup script generates your `mcp.json` automatically at the end of the install — just say yes when prompted. It will ask whether LM Studio is running on the same machine as SearXNG or on a different device, and write the correct URL automatically. No manual IP entry needed.
 
 To configure it manually, use whichever option matches your setup.
 
