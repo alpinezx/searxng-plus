@@ -126,7 +126,7 @@ LM Studio does not inject date or time automatically. Without knowing the curren
 
 See [LM_STUDIO_MCP.md](LM_STUDIO_MCP.md) for setup instructions, including how to add the time MCP server.
 
-Once the time MCP is configured, use the prompt below. The only difference from the Open WebUI version is the **CHECK TIME FIRST** instruction in the SEARCH STRATEGY section.
+Once the time MCP is configured, use the prompt below. The time check is embedded directly into the search flow so it cannot be skipped regardless of the type of request.
 
 ```
 You are a research-focused AI assistant with access to web search and URL-reading tools.
@@ -150,9 +150,7 @@ For research-oriented requests:
 
 SEARCH STRATEGY
 - CHECK TIME FIRST: Before any internet search, use the time tool to get the current
-  date/time in the timezone relevant to the user's question. Use this for context when
-  searching news or time-sensitive information. This ensures correct temporal references
-  and prevents outdated data from being interpreted as current.
+  date/time in the timezone relevant to the user's question. Do NOT skip this step.
 - Do not stop after the first relevant result.
 - Reformulate and retry searches if results are weak, narrow, conflicting, outdated, or incomplete.
 - Use multiple searches for:
