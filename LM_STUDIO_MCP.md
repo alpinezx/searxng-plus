@@ -60,11 +60,13 @@ Save. Confirm `mcp/searxng` appears in the integrations panel with `searxng_web_
 
 ## Cleaner Web Page Reading with mcp-fetch-server
 
-SearXNG includes a `web_url_read` tool for reading web pages, but it can return cluttered output — navbars, footers, ads, and other boilerplate mixed in with the actual content.
+SearXNG's built-in `web_url_read` tool can return cluttered output — image tags, anchor fragments, repeated boilerplate, and layout noise mixed in with the actual content. This wastes context window and makes it harder for your model to extract what it needs.
 
-**mcp-fetch-server** is a free, no-API-key alternative that uses Mozilla Readability (the same engine as Firefox Reader View) to extract just the article content as clean Markdown. This means less noise for your model and significantly lower token usage — particularly important when running local models with limited context windows.
+**mcp-fetch-server** replaces it with a cleaner alternative that uses Mozilla Readability (the same engine as Firefox Reader View) to extract just the article content as clean Markdown. Less noise, lower token usage, and a more reliable experience — particularly important when running local models with limited context windows.
 
-It runs entirely on your Windows machine via `npx` — nothing is installed on the Ubuntu server.
+**Privacy:** mcp-fetch-server runs entirely on your Windows machine via `npx`. Nothing leaves your network except the direct request to the target website — the same as opening the page in a browser. It is the fully private option for page reading.
+
+**Limitation:** Like `web_url_read`, it can only read HTML that is present when the page first loads. JavaScript-heavy pages that render content dynamically after load may return incomplete or empty results. See the Jina Reader section below for how to handle those.
 
 ### Requirements
 
@@ -78,7 +80,35 @@ If it's not installed, download it from [nodejs.org](https://nodejs.org).
 
 ### Setup
 
-Update your `mcp.json` in LM Studio → **Developer tab** to add the fetch server alongside SearXNG:
+Update your `mcp.json` in LM Studio → **Developer tab** to add mcp-fetch-server alongside SearXNG:
+
+**Same machine:**
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-searxng"
+      ],
+      "env": {
+        "SEARXNG_URL": "http://localhost:8081"
+      }
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["mcp-fetch-server"],
+      "env": {
+        "DEFAULT_LIMIT": "50000"
+      }
+    }
+  }
+}
+```
+
+**Different machine:**
 
 ```json
 {
@@ -106,6 +136,80 @@ Update your `mcp.json` in LM Studio → **Developer tab** to add the fetch serve
 
 ---
 
+## Cleaner Web Page Reading with Jina Reader
+
+Both `web_url_read` and `mcp-fetch-server` rely on extracting content from the HTML that is immediately available when a page loads. JavaScript-heavy pages — where content is rendered dynamically after load — can return empty or near-useless results with either tool.
+
+**Jina Reader** solves this. It sends the URL to Jina AI's servers, which fetch and fully render the page in a real browser before returning clean Markdown. The result is noticeably cleaner output even on complex sites — tested against the Met Office forecast page, one of the more JavaScript-heavy pages in common use, it returned a fully structured hourly breakdown with no noise whatsoever.
+
+It is free with no account or API key required. Anonymous usage is rate-limited to 20 requests per minute by IP, which is more than sufficient for normal research use. Node.js must be installed on your Windows machine — the same requirement as `mcp-fetch-server`.
+
+**Privacy notice:** Jina Reader is a cloud service. URLs fetched through it are processed on Jina AI's servers and may be cached. No account is required for anonymous use, but if privacy is important to you, review Jina's current privacy policy at [jina.ai/legal](https://jina.ai/legal) before using it — noting that following their acquisition by Elastic in October 2025, their policies are in transition. For a fully local alternative, use mcp-fetch-server instead, accepting that JavaScript-heavy pages may not render cleanly.
+
+### Setup
+
+Update your `mcp.json` in LM Studio → **Developer tab** to add Jina Reader alongside SearXNG:
+
+**Same machine:**
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-searxng"
+      ],
+      "env": {
+        "SEARXNG_URL": "http://localhost:8081"
+      }
+    },
+    "jina": {
+      "command": "npx",
+      "args": [
+        "jina-mcp-tools",
+        "--transport",
+        "stdio"
+      ]
+    }
+  }
+}
+```
+
+**Different machine:**
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-searxng"
+      ],
+      "env": {
+        "SEARXNG_URL": "http://<your-ubuntu-machine-ip>:8081"
+      }
+    },
+    "jina": {
+      "command": "npx",
+      "args": [
+        "jina-mcp-tools",
+        "--transport",
+        "stdio"
+      ]
+    }
+  }
+}
+```
+
+Once connected, enable `jina_reader` in the integrations panel. You can disable `web_url_read` from `mcp/searxng` — it is redundant once Jina is active.
+
+> **Using mcp-fetch-server as well?** If you have both `mcp-fetch-server` and Jina Reader connected, your model has two reading tools available. `fetch_readable` is faster and fully local — prefer it for standard pages. `jina_reader` handles JavaScript-heavy pages that `fetch_readable` cannot render. Both can be enabled simultaneously and your model will use whichever is appropriate.
+
+---
+
 ## Adding the Time MCP Server
 
 Unlike Open WebUI, LM Studio does not inject the current date and time automatically. Without this context, models can misinterpret cached or stale search results as current — for example, treating yesterday's forecast as today's weather, or referencing outdated news as breaking.
@@ -128,6 +232,14 @@ Update your `mcp.json` to add the time server. Use whichever base URL matches yo
       "env": {
         "SEARXNG_URL": "http://localhost:8081"
       }
+    },
+    "jina": {
+      "command": "npx",
+      "args": [
+        "jina-mcp-tools",
+        "--transport",
+        "stdio"
+      ]
     },
     "fetch": {
       "command": "npx",
@@ -162,6 +274,14 @@ Update your `mcp.json` to add the time server. Use whichever base URL matches yo
         "SEARXNG_URL": "http://<your-ubuntu-machine-ip>:8081"
       }
     },
+    "jina": {
+      "command": "npx",
+      "args": [
+        "jina-mcp-tools",
+        "--transport",
+        "stdio"
+      ]
+    },
     "fetch": {
       "command": "npx",
       "args": ["mcp-fetch-server"],
@@ -180,7 +300,7 @@ Update your `mcp.json` to add the time server. Use whichever base URL matches yo
 }
 ```
 
-Once connected, enable `current_time` in the integrations panel alongside `searxng_web_search` and `fetch_readable`.
+Once connected, enable `current_time` in the integrations panel alongside `searxng_web_search` and `jina_reader`.
 
 ---
 
@@ -188,15 +308,17 @@ Once connected, enable `current_time` in the integrations panel alongside `searx
 
 Every enabled tool is loaded into the model's context on every request, whether it's used or not. Keeping the list short means less wasted context and a cleaner experience.
 
-Once all three servers are connected, go to the integrations panel and **disable every tool**, then enable just these three:
+Once all servers are connected, go to the integrations panel and **disable every tool**, then enable just these:
 
 | Tool | Server |
 |---|---|
 | `searxng_web_search` | `mcp/searxng` |
-| `fetch_readable` | `mcp/fetch` |
+| `jina_reader` | `mcp/jina` |
 | `current_time` | `mcp/time` |
 
-That's all you need. `searxng_web_search` finds pages. `fetch_readable` reads them cleanly. `current_time` ensures the model has accurate time context before searching. The other tools in each server (`web_url_read`, `fetch_raw`, etc.) are redundant once this set is active.
+`searxng_web_search` finds pages. `jina_reader` reads them cleanly, including JavaScript-heavy pages that other tools cannot render. `current_time` ensures the model has accurate time context before searching.
+
+If you also have `mcp-fetch-server` connected, add `fetch_readable` to the list. Use it for standard pages where speed matters — it is fully local and faster than Jina. Leave `web_url_read`, `fetch_raw`, and all other tools disabled; they are redundant once this set is active.
 
 ---
 
@@ -216,3 +338,6 @@ Confirm Node.js is installed on your Windows machine (`node --version`). `npx` i
 
 **mcp-time not connecting:**
 Same requirement as above — Node.js must be installed. Run `npx @mcpcentral/mcp-time --version` in a Windows terminal to verify it can be reached.
+
+**jina-mcp-tools not connecting:**
+Confirm Node.js is installed on your Windows machine (`node --version`). If the tool connects but returns errors on specific pages, the page may be blocking automated requests — this is normal for some sites. Try a different source for the same information.
