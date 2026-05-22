@@ -1,15 +1,12 @@
 #!/bin/bash
 # =============================================================
-# setup.sh — Install Docker and launch SearXNG, Open WebUI
-#            and Playwright
+# setup.sh — Install Docker and launch SearXNG and Open WebUI
 # Ubuntu Edition
 #
 # Architecture:
 #   SearXNG    — private search, exposed LAN-wide on port 8081
 #   Open WebUI — cloud model frontend (OpenAI, Anthropic, Google,
 #                OpenRouter, etc.), exposed LAN-wide on chosen port
-#   Playwright — local browser service for JS-heavy page extraction,
-#                version-matched to Open WebUI, running on port 3001
 #
 # Must be run as root: sudo bash setup.sh
 # =============================================================
@@ -41,7 +38,7 @@ fi
 
 echo ""
 echo "============================================="
-echo " SearXNG + Open WebUI + Playwright"
+echo " SearXNG + Open WebUI"
 echo " Setup — Ubuntu Edition"
 echo "============================================="
 echo ""
@@ -50,7 +47,6 @@ echo ""
 echo "   • Docker          — required for everything else"
 echo "   • SearXNG         — private local search engine"
 echo "   • Open WebUI      — self-hosted AI chat interface"
-echo "   • Playwright      — headless browser for web search"
 echo ""
 echo " You will be asked before anything is installed."
 echo ""
@@ -58,18 +54,15 @@ read -p " Press Enter to continue or Ctrl+C to cancel..."
 echo ""
 
 MAX_RETRIES=3
-PLAYWRIGHT_PORT=3001
-PLAYWRIGHT_IMAGE_TAG="playwright-server"
 INSTALL_SEARXNG=false
 INSTALL_WEBUI=false
-INSTALL_PLAYWRIGHT=false
 
 # =============================================================
 # Step 1 — Docker
 # =============================================================
 section "[1/3] Docker"
 echo ""
-echo " Docker is required to run SearXNG, Open WebUI and Playwright."
+echo " Docker is required to run SearXNG and Open WebUI."
 echo " It will be installed as the container runtime for everything else."
 echo ""
 read -p " Install Docker? (y/n): " choice
@@ -125,33 +118,23 @@ echo ""
 echo "   1) SearXNG only"
 echo "      Private search engine — use in your browser or with LM Studio / Open WebUI"
 echo ""
-echo "   2) SearXNG + Open WebUI"
-echo "      Adds a self-hosted chat interface for cloud AI models with web search"
+echo "   2) Open WebUI only"
+echo "      Self-hosted chat interface for cloud AI models"
 echo ""
-echo "   3) SearXNG + Open WebUI + Playwright"
-echo "      Adds a headless browser for extracting content from JS-heavy pages"
-echo "      (recommended for best web search results in Open WebUI)"
-echo ""
-echo "   4) Open WebUI only"
-echo "      Self-hosted chat interface without SearXNG"
-echo ""
-echo "   5) Open WebUI + Playwright only"
-echo "      Chat interface with headless browser, no SearXNG"
+echo "   3) SearXNG + Open WebUI"
+echo "      Adds web search inside Open WebUI via your local SearXNG instance"
+echo "      (recommended)"
 echo ""
 while true; do
-  read -p " Enter choice [1-5]: " combo_choice
+  read -p " Enter choice [1-3]: " combo_choice
   case "$combo_choice" in
-    1) INSTALL_SEARXNG=true;  INSTALL_WEBUI=false; INSTALL_PLAYWRIGHT=false
+    1) INSTALL_SEARXNG=true;  INSTALL_WEBUI=false
        info "SearXNG only selected."; break ;;
-    2) INSTALL_SEARXNG=true;  INSTALL_WEBUI=true;  INSTALL_PLAYWRIGHT=false
-       info "SearXNG + Open WebUI selected."; break ;;
-    3) INSTALL_SEARXNG=true;  INSTALL_WEBUI=true;  INSTALL_PLAYWRIGHT=true
-       info "SearXNG + Open WebUI + Playwright selected."; break ;;
-    4) INSTALL_SEARXNG=false; INSTALL_WEBUI=true;  INSTALL_PLAYWRIGHT=false
+    2) INSTALL_SEARXNG=false; INSTALL_WEBUI=true
        info "Open WebUI only selected."; break ;;
-    5) INSTALL_SEARXNG=false; INSTALL_WEBUI=true;  INSTALL_PLAYWRIGHT=true
-       info "Open WebUI + Playwright selected."; break ;;
-    *) warn "Invalid choice. Please enter 1, 2, 3, 4 or 5." ;;
+    3) INSTALL_SEARXNG=true;  INSTALL_WEBUI=true
+       info "SearXNG + Open WebUI selected."; break ;;
+    *) warn "Invalid choice. Please enter 1, 2 or 3." ;;
   esac
 done
 echo ""
@@ -181,12 +164,6 @@ if $INSTALL_WEBUI; then
     esac
   done
 
-  # Port 3001 is reserved for Playwright
-  if [ "$WEBUI_PORT" -eq "$PLAYWRIGHT_PORT" ]; then
-    echo ""
-    err "Port $PLAYWRIGHT_PORT is reserved for Playwright. Please choose a different port."
-    exit 1
-  fi
   echo ""
 fi
 
@@ -519,91 +496,6 @@ if $INSTALL_WEBUI; then
   }
 fi
 
-# --- Playwright ---
-if $INSTALL_PLAYWRIGHT; then
-  echo ""
-  info "Setting up Playwright..."
-  info "Detecting Playwright version from Open WebUI..."
-
-  # Give Open WebUI a moment to fully settle before querying it
-  sleep 5
-
-  PW_VERSION=$(docker exec open-webui pip show playwright 2>/dev/null \
-    | grep '^Version:' | awk '{print $2}' || echo "")
-
-  if [ -z "$PW_VERSION" ]; then
-    warn "Could not detect Playwright version — skipping."
-    warn "Run setup.sh again after Open WebUI has fully started."
-  else
-    info "Playwright version: v${PW_VERSION}"
-
-    PW_BASE_IMAGE="mcr.microsoft.com/playwright:v${PW_VERSION}-noble"
-
-    attempt=1
-    until docker pull "$PW_BASE_IMAGE"; do
-      if [ $attempt -ge $MAX_RETRIES ]; then
-        err "Failed to pull Playwright base image after $MAX_RETRIES attempts."
-        PW_VERSION=""
-        break
-      fi
-      warn "Pull failed (attempt $attempt/$MAX_RETRIES) — retrying in 3s..."
-      attempt=$((attempt + 1))
-      sleep 3
-    done
-
-    if [ -n "$PW_VERSION" ]; then
-      DOCKERFILE_DIR=$(mktemp -d)
-      cat > "$DOCKERFILE_DIR/Dockerfile" << EOF
-FROM mcr.microsoft.com/playwright:v${PW_VERSION}-noble
-RUN npx --yes playwright@${PW_VERSION} run-server --version 2>/dev/null || true
-ENV PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT=10000
-ENTRYPOINT ["npx", "--yes", "playwright@${PW_VERSION}", "run-server", "--port", "3001", "--host", "0.0.0.0"]
-EOF
-
-      info "Building local Playwright image..."
-      if docker build -t "${PLAYWRIGHT_IMAGE_TAG}:${PW_VERSION}" \
-          "$DOCKERFILE_DIR" > /dev/null 2>&1; then
-        ok "Playwright image built (v${PW_VERSION})."
-        docker tag "${PLAYWRIGHT_IMAGE_TAG}:${PW_VERSION}" \
-          "${PLAYWRIGHT_IMAGE_TAG}:latest" > /dev/null 2>&1
-
-        if docker ps -a --format '{{.Names}}' | grep -q '^playwright-chromium$'; then
-          docker rm -f playwright-chromium > /dev/null
-        fi
-
-        docker run -d \
-          --name playwright-chromium \
-          --network=host \
-          --restart always \
-          --log-opt max-size=10m \
-          --log-opt max-file=3 \
-          --shm-size=1g \
-          "${PLAYWRIGHT_IMAGE_TAG}:latest"
-
-        info "Waiting for Playwright to be ready..."
-        MAX_WAIT=60; elapsed=0; success=false
-        while [ $elapsed -lt $MAX_WAIT ]; do
-          if docker logs playwright-chromium 2>&1 | grep -q "Listening on"; then
-            success=true; break
-          fi
-          info "Not ready yet... (${elapsed}s elapsed)"
-          sleep $INTERVAL
-          elapsed=$((elapsed + INTERVAL))
-        done
-
-        $success && ok "Playwright is ready on ws://localhost:${PLAYWRIGHT_PORT}." || {
-          warn "Playwright did not confirm startup — it may still be initialising."
-          warn "Check logs: docker logs playwright-chromium --tail 20"
-        }
-      else
-        err "Failed to build Playwright image."
-      fi
-
-      rm -rf "$DOCKERFILE_DIR"
-    fi
-  fi
-fi
-
 # =============================================================
 # Summary
 # =============================================================
@@ -614,10 +506,8 @@ echo "============================================="
 echo " Setup complete!"
 echo ""
 echo " Installed:"
-$INSTALL_SEARXNG    && echo "   [ok]  SearXNG    → http://$LAN_IP:8081"
-$INSTALL_WEBUI      && echo "   [ok]  Open WebUI → http://$LAN_IP:${WEBUI_PORT}"
-$INSTALL_PLAYWRIGHT && [ -n "${PW_VERSION:-}" ] && \
-  echo "   [ok]  Playwright → ws://localhost:${PLAYWRIGHT_PORT}"
+$INSTALL_SEARXNG && echo "   [ok]  SearXNG    → http://$LAN_IP:8081"
+$INSTALL_WEBUI   && echo "   [ok]  Open WebUI → http://$LAN_IP:${WEBUI_PORT}"
 echo ""
 echo " All services start automatically on boot."
 echo ""
@@ -630,19 +520,12 @@ if $INSTALL_WEBUI; then
     echo "      Set SearXNG Query URL to:"
     echo "      http://localhost:8081/search?q=<query>&format=json"
   fi
-  if $INSTALL_PLAYWRIGHT && [ -n "${PW_VERSION:-}" ]; then
-    echo "   4. Optionally set Web Loader Engine to playwright"
-    echo "      for better extraction of JS-heavy pages:"
-    echo "      Playwright WebSocket URL: ws://localhost:${PLAYWRIGHT_PORT}"
-  fi
   echo ""
 fi
 echo " Useful commands:"
 echo "   docker ps                                   # check all containers"
-$INSTALL_SEARXNG    && echo "   docker logs searxng --tail 20               # SearXNG logs"
-$INSTALL_WEBUI      && echo "   docker logs open-webui --tail 20            # Open WebUI logs"
-$INSTALL_PLAYWRIGHT && [ -n "${PW_VERSION:-}" ] && \
-  echo "   docker logs playwright-chromium --tail 20  # Playwright logs"
+$INSTALL_SEARXNG && echo "   docker logs searxng --tail 20               # SearXNG logs"
+$INSTALL_WEBUI   && echo "   docker logs open-webui --tail 20            # Open WebUI logs"
 echo "============================================="
 echo ""
 

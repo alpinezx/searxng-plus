@@ -1,12 +1,11 @@
 #!/bin/bash
 # =============================================================
-# uninstall.sh — Remove Open WebUI, SearXNG, Playwright and/or Docker
+# uninstall.sh — Remove Open WebUI, SearXNG and/or Docker
 # Ubuntu Edition
 #
 # Removes components installed by setup.sh:
 #   — Open WebUI   (cloud model frontend + /root/open-webui-data)
 #   — SearXNG      (private search + /root/searxng-config)
-#   — Playwright   (browser service + local playwright-server images)
 #   — Docker       (service, packages, keyrings, repo)
 #
 # Must be run as root: sudo bash uninstall.sh
@@ -25,46 +24,6 @@ fi
 # =============================================================
 # Helper functions
 # =============================================================
-
-remove_playwright() {
-  echo ""
-  echo "--- Removing Playwright ---"
-
-  if docker ps -a --format '{{.Names}}' | grep -q '^playwright-chromium$'; then
-    echo "  Stopping and removing playwright-chromium container..."
-    docker stop playwright-chromium > /dev/null 2>&1
-    docker rm playwright-chromium > /dev/null 2>&1
-    echo "  [x] Container removed."
-  else
-    echo "  [ ] No playwright-chromium container found — skipping."
-  fi
-
-  # Remove all local playwright-server images (versioned + latest tag)
-  PW_IMAGES=$(docker images --format '{{.Repository}}:{{.Tag}}' \
-    | grep '^playwright-server:' || true)
-  if [ -n "$PW_IMAGES" ]; then
-    echo "  Removing local Playwright images..."
-    echo "$PW_IMAGES" | xargs docker rmi > /dev/null 2>&1 || true
-    echo "  [x] Local Playwright images removed."
-  else
-    echo "  [ ] No local Playwright images found — skipping."
-  fi
-
-  # Remove the upstream base image if present
-  PW_BASE=$(docker images --format '{{.Repository}}' \
-    | grep '^mcr.microsoft.com/playwright$' || true)
-  if [ -n "$PW_BASE" ]; then
-    echo "  Removing Playwright base image..."
-    docker images --format '{{.Repository}}:{{.Tag}}' \
-      | grep '^mcr.microsoft.com/playwright:' \
-      | xargs docker rmi > /dev/null 2>&1 || true
-    echo "  [x] Base image removed."
-  else
-    echo "  [ ] No Playwright base image found — skipping."
-  fi
-
-  echo ""
-}
 
 remove_searxng() {
   echo ""
@@ -178,7 +137,6 @@ while true; do
   # --- Detect what's installed ---
   has_searxng=false
   has_open_webui=false
-  has_playwright=false
   has_docker=false
 
   if command -v docker &>/dev/null && docker info > /dev/null 2>&1; then
@@ -190,14 +148,12 @@ while true; do
       && has_searxng=true || true
     docker ps -a --format '{{.Names}}' | grep -q '^open-webui$' \
       && has_open_webui=true || true
-    docker ps -a --format '{{.Names}}' | grep -q '^playwright-chromium$' \
-      && has_playwright=true || true
   fi
 
   # --- Header ---
   echo ""
   echo "============================================="
-  echo " SearXNG + Open WebUI + Playwright"
+  echo " SearXNG + Open WebUI"
   echo " Uninstaller — Ubuntu Edition"
   echo "============================================="
   echo ""
@@ -207,8 +163,6 @@ while true; do
                    || echo "   [ ] Open WebUI  — not found"
   $has_searxng     && echo "   [x] SearXNG     — installed" \
                    || echo "   [ ] SearXNG     — not found"
-  $has_playwright  && echo "   [x] Playwright  — installed" \
-                   || echo "   [ ] Playwright  — not found"
   $has_docker      && echo "   [x] Docker      — installed" \
                    || echo "   [ ] Docker      — not found"
   echo ""
@@ -221,31 +175,21 @@ while true; do
   any_service=false
   $has_open_webui && any_service=true
   $has_searxng    && any_service=true
-  $has_playwright && any_service=true
 
   service_count=0
   $has_open_webui && service_count=$((service_count + 1))
   $has_searxng    && service_count=$((service_count + 1))
-  $has_playwright && service_count=$((service_count + 1))
 
   if [ $service_count -gt 1 ]; then
     $has_open_webui && options+=("Remove Open WebUI only")
     $has_searxng    && options+=("Remove SearXNG only")
-    $has_playwright && options+=("Remove Playwright only")
 
-    if $has_open_webui && $has_searxng && $has_playwright; then
-      options+=("Remove Open WebUI, SearXNG and Playwright")
-    elif $has_open_webui && $has_searxng; then
+    if $has_open_webui && $has_searxng; then
       options+=("Remove Open WebUI and SearXNG")
-    elif $has_open_webui && $has_playwright; then
-      options+=("Remove Open WebUI and Playwright")
-    elif $has_searxng && $has_playwright; then
-      options+=("Remove SearXNG and Playwright")
     fi
   elif [ $service_count -eq 1 ]; then
     $has_open_webui && options+=("Remove Open WebUI")
     $has_searxng    && options+=("Remove SearXNG")
-    $has_playwright && options+=("Remove Playwright")
   fi
 
   if $has_docker; then
@@ -310,73 +254,14 @@ while true; do
       fi
       ;;
 
-    "Remove Playwright only"|"Remove Playwright")
-      echo " This will remove the Playwright container and all local Playwright images."
-      if confirm; then
-        remove_playwright
-        ubuntu_cleanup
-        echo "============================================="
-        echo " Playwright has been removed."
-        echo "============================================="
-      else
-        echo " Cancelled. Nothing was removed."
-      fi
-      ;;
-
     "Remove Open WebUI and SearXNG")
-      echo " This will remove Open WebUI and SearXNG, but keep Playwright and Docker."
+      echo " This will remove Open WebUI and SearXNG, but keep Docker."
       if confirm; then
         remove_open_webui
         remove_searxng
         ubuntu_cleanup
         echo "============================================="
         echo " Open WebUI and SearXNG have been removed."
-        echo " Playwright and Docker are still installed."
-        echo "============================================="
-      else
-        echo " Cancelled. Nothing was removed."
-      fi
-      ;;
-
-    "Remove Open WebUI and Playwright")
-      echo " This will remove Open WebUI and Playwright, but keep SearXNG and Docker."
-      if confirm; then
-        remove_open_webui
-        remove_playwright
-        ubuntu_cleanup
-        echo "============================================="
-        echo " Open WebUI and Playwright have been removed."
-        echo " SearXNG and Docker are still installed."
-        echo "============================================="
-      else
-        echo " Cancelled. Nothing was removed."
-      fi
-      ;;
-
-    "Remove SearXNG and Playwright")
-      echo " This will remove SearXNG and Playwright, but keep Open WebUI and Docker."
-      if confirm; then
-        remove_searxng
-        remove_playwright
-        ubuntu_cleanup
-        echo "============================================="
-        echo " SearXNG and Playwright have been removed."
-        echo " Open WebUI and Docker are still installed."
-        echo "============================================="
-      else
-        echo " Cancelled. Nothing was removed."
-      fi
-      ;;
-
-    "Remove Open WebUI, SearXNG and Playwright")
-      echo " This will remove all three services, but keep Docker."
-      if confirm; then
-        remove_open_webui
-        remove_searxng
-        remove_playwright
-        ubuntu_cleanup
-        echo "============================================="
-        echo " Open WebUI, SearXNG and Playwright removed."
         echo " Docker is still installed."
         echo "============================================="
       else
@@ -390,7 +275,6 @@ while true; do
       if confirm; then
         remove_open_webui
         remove_searxng
-        remove_playwright
         remove_docker
         ubuntu_cleanup
         echo "============================================="

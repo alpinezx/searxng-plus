@@ -1,6 +1,6 @@
 # Research System Prompt for Open WebUI
 
-This system prompt is designed for use with Open WebUI and is particularly effective when web search and Playwright are enabled. It instructs the model to be persistent, thorough, and source-backed — rather than stopping at the first failed result or producing a fast but shallow answer.
+This system prompt is designed for use with Open WebUI and is particularly effective when web search is enabled. It instructs the model to be persistent, thorough, and source-backed — rather than stopping at the first failed result or producing a fast but shallow answer.
 
 For a condensed version that covers the most impactful behaviours, see the [README](OPENWEBUI_SETUP.md#5-set-a-system-prompt-for-reliable-web-search).
 
@@ -122,4 +122,4 @@ A good answer is one that is accurate, complete, well-supported, and reflects de
 
 In Open WebUI, paste the prompt above into the **System Prompt** field when editing a model under **Admin Panel → Models**, or into the system prompt box in any chat session.
 
-It works with any model that has web search and Playwright enabled, but is most effective with larger, more capable models.
+It works with any model that has web search enabled, but is most effective with larger, more capable models.

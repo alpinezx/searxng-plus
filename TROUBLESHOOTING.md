@@ -56,23 +56,6 @@ Normal. Individual search engines occasionally block automated queries. Ignore t
 
 ---
 
-## Playwright
-
-**Playwright WebSocket connection error (428 Precondition Required):**
-The Playwright server version doesn't match Open WebUI. This can happen if Open WebUI updated and changed its internal Playwright version. Fix it by running the update script:
-```bash
-sudo bash update.sh
-```
-The update script detects the mismatch and rebuilds Playwright automatically.
-
-**Playwright logs show no activity:**
-The official Playwright server is intentionally quiet — it only logs errors. No log output during normal use is expected behaviour, not a problem.
-
-**Playwright times out on some pages:**
-Some sites actively block headless browsers. This is normal and not a fault with your setup — the Playwright container is working correctly. Most pages will load fine.
-
----
-
 ## Open WebUI Search
 
 **Open WebUI web search not returning results:**
@@ -86,10 +69,10 @@ These providers require an OpenAI-compatible connection entry. Make sure the URL
 ## LM Studio
 
 **LM Studio "SEARXNG_URL not set" error:**
-The URL must go in the `"env"` block in `mcp.json` as `SEARXNG_URL`, not in the `"args"` array. Make sure you're using your Ubuntu machine's LAN IP, not `localhost`.
+The URL must go in the `"env"` block in `mcp.json` as `SEARXNG_URL`, not in the `"args"` array. Double-check the structure matches the example in [LM_STUDIO_MCP.md](LM_STUDIO_MCP.md).
 
 **LM Studio can't reach SearXNG:**
-`localhost` won't work from a Windows machine — use the Ubuntu machine's LAN IP in `mcp.json`. Verify SearXNG is reachable from Windows by opening a browser and visiting `http://<your-ubuntu-machine-ip>:8081` before troubleshooting LM Studio further.
+If LM Studio is on a different machine, `localhost` won't work — use the LAN IP of the machine running SearXNG in `mcp.json`. Verify SearXNG is reachable by opening a browser on the LM Studio machine and visiting `http://<your-ubuntu-machine-ip>:8081` before troubleshooting further. If LM Studio and SearXNG are on the same machine, `localhost` is correct.
 
 **Tools not appearing after saving mcp.json:**
 Restart LM Studio, or toggle the integration off and back on in the Developer tab.

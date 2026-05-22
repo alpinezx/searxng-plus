@@ -2,13 +2,6 @@
 
 If you prefer to remove things by hand rather than using the uninstall script, use the commands below.
 
-## Playwright only
-
-```bash
-sudo docker rm -f playwright-chromium
-sudo docker rmi playwright-server:latest
-```
-
 ## Open WebUI only
 
 ```bash

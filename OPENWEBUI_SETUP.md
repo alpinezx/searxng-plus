@@ -23,7 +23,7 @@ Click **Save** after each one.
 
 ---
 
-## 2. Set up SearXNG web search and Playwright
+## 2. Set up SearXNG web search
 
 All settings below are in **Admin Panel → Settings → Web Search**.
 
@@ -35,32 +35,19 @@ All settings below are in **Admin Panel → Settings → Web Search**.
 | Web Search Engine | `searxng` | Your local private search engine |
 | SearXNG Query URL | `http://localhost:8081/search?q=<query>&format=json` | Required for SearXNG to work |
 | SearXNG Search Language | `all` | Results in any language; change to `en` for English only |
-| Search Result Count | `3` | Enough for quality answers without overloading Playwright |
-| Concurrent Requests | `1` | Sequential is fast enough and avoids multiple browser sessions |
+| Search Result Count | `3` | Enough for quality answers without excessive page loading |
+| Concurrent Requests | `1` | Sequential is fast enough and avoids multiple simultaneous requests |
 | Fetch URL Content Length Limit | No limit | Leave as is unless the AI is overwhelmed by very long pages |
 | Domain Filter List | Empty | Leave empty unless you want to permanently block specific sites |
 | Bypass Embedding and Retrieval | **Off** | Enabling this causes unreliable model behaviour — leave it off |
-| Bypass Web Loader | Off | Must be off for Playwright to be used |
+| Bypass Web Loader | Off | Leave off |
 | Trust Proxy Environment | Either | Only relevant if you use a network proxy |
 
 Click **Save** when done.
 
-### Loader section
+> **Web Loader Engine:** Leave this on `default`. The other options (Firecrawl, etc.) require external API keys and are outside the scope of this setup.
 
-| Setting | Recommended value | Why |
-|---|---|---|
-| Web Loader Engine | `playwright` | Uses the local Playwright browser for JS-heavy page extraction |
-| Playwright WebSocket URL | `ws://localhost:3001` | The address of your local Playwright container |
-| Playwright Timeout (ms) | `10000` | 10 seconds is generous — dead or blocking sites are skipped after this |
-| Concurrent Requests | `1` | Match this to the General section setting above |
-
-Click **Save** when done.
-
-> **Note:** The Playwright WebSocket URL uses `localhost` even when accessing Open WebUI from another device. Playwright runs on the same machine as Open WebUI and they communicate locally.
-
-> **Note:** Some sites actively block headless browsers. This is normal — Playwright will time out after 10 seconds and move on.
-
-> **Not using Playwright?** Set **Web Loader Engine** to `default` and leave **Bypass Web Loader** off. The General section settings apply the same way.
+> **Not using SearXNG?** The General section settings apply regardless of which search engine you use.
 
 ---
 
