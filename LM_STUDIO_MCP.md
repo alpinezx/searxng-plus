@@ -106,18 +106,97 @@ Update your `mcp.json` in LM Studio → **Developer tab** to add the fetch serve
 
 ---
 
+## Adding the Time MCP Server
+
+Unlike Open WebUI, LM Studio does not inject the current date and time automatically. Without this context, models can misinterpret cached or stale search results as current — for example, treating yesterday's forecast as today's weather, or referencing outdated news as breaking.
+
+**@mcpcentral/mcp-time** solves this by giving the model accurate time context before it searches. The system prompt instructs the model to check the time first — but it needs this MCP active to do so.
+
+Update your `mcp.json` to add the time server. Use whichever base URL matches your setup:
+
+**Same machine:**
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-searxng"
+      ],
+      "env": {
+        "SEARXNG_URL": "http://localhost:8081"
+      }
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["mcp-fetch-server"],
+      "env": {
+        "DEFAULT_LIMIT": "50000"
+      }
+    },
+    "time": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcpcentral/mcp-time"
+      ]
+    }
+  }
+}
+```
+
+**Different machine:**
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-searxng"
+      ],
+      "env": {
+        "SEARXNG_URL": "http://<your-ubuntu-machine-ip>:8081"
+      }
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["mcp-fetch-server"],
+      "env": {
+        "DEFAULT_LIMIT": "50000"
+      }
+    },
+    "time": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcpcentral/mcp-time"
+      ]
+    }
+  }
+}
+```
+
+Once connected, enable `current_time` in the integrations panel alongside `searxng_web_search` and `fetch_readable`.
+
+---
+
 ## Which Tools to Enable
 
 Every enabled tool is loaded into the model's context on every request, whether it's used or not. Keeping the list short means less wasted context and a cleaner experience.
 
-Once both servers are connected, go to the integrations panel and **disable every tool**, then enable just these two:
+Once all three servers are connected, go to the integrations panel and **disable every tool**, then enable just these three:
 
 | Tool | Server |
 |---|---|
 | `searxng_web_search` | `mcp/searxng` |
 | `fetch_readable` | `mcp/fetch` |
+| `current_time` | `mcp/time` |
 
-That's all you need. `searxng_web_search` finds pages. `fetch_readable` reads them cleanly. The other tools in each server (`web_url_read`, `fetch_raw`, etc.) are redundant once this pair is active.
+That's all you need. `searxng_web_search` finds pages. `fetch_readable` reads them cleanly. `current_time` ensures the model has accurate time context before searching. The other tools in each server (`web_url_read`, `fetch_raw`, etc.) are redundant once this set is active.
 
 ---
 
@@ -134,3 +213,6 @@ Restart LM Studio, or toggle the integration off and back on in the Developer ta
 
 **mcp-fetch-server not connecting:**
 Confirm Node.js is installed on your Windows machine (`node --version`). `npx` is bundled with Node.js and is required to run `mcp-fetch-server`.
+
+**mcp-time not connecting:**
+Same requirement as above — Node.js must be installed. Run `npx @mcpcentral/mcp-time --version` in a Windows terminal to verify it can be reached.
