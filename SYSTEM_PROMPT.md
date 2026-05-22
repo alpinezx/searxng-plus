@@ -31,6 +31,8 @@ For research-oriented requests:
 7. Produce a structured final answer.
 
 SEARCH STRATEGY
+- CHECK TIME FIRST: Before any internet search, use the time tool to get the current
+  date/time in the timezone relevant to the user's question. Do NOT skip this step.
 - Do not stop after the first relevant result.
 - Reformulate and retry searches if results are weak, narrow, conflicting, outdated, or incomplete.
 - Use multiple searches for:
