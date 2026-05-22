@@ -39,24 +39,6 @@ At the end, it prints your LAN IP with exact URLs for all installed services.
 
 ---
 
-## Daily Use
-
-Docker, SearXNG and Open WebUI all start automatically on boot — no action needed.
-
-| What | Where |
-|------|-------|
-| Open WebUI (local) | http://localhost:\<port\> |
-| Open WebUI (network) | http://\<your-ubuntu-machine-ip\>:\<port\> |
-| SearXNG (local) | http://localhost:8081 |
-| SearXNG (network) | http://\<your-ubuntu-machine-ip\>:8081 |
-
-SearXNG is also a fully functional private search engine usable in any browser. To set it as your default in Chrome, Edge, or Firefox, add it manually in browser settings using:
-```
-http://<your-ubuntu-machine-ip>:8081/search?q=%s
-```
-
----
-
 ## Updates
 
 When Open WebUI shows a "new version available" notification, run:
@@ -66,28 +48,6 @@ curl -fsSL https://raw.githubusercontent.com/alpinezx/searxng-plus/refs/heads/ma
 ```
 
 The update script pulls the latest images for your installed services, restarts them if changed, and prints a summary of what was updated.
-
----
-
-## Quick Reference Commands
-
-```bash
-# Check all containers are running
-sudo docker ps
-
-# SearXNG
-sudo docker restart searxng
-sudo docker logs searxng --tail 20
-curl "http://localhost:8081/search?q=test&format=json"
-
-# Open WebUI
-sudo docker restart open-webui
-sudo docker logs open-webui --tail 20
-
-# Docker / system
-sudo systemctl status docker
-sudo systemctl restart docker
-```
 
 ---
 
@@ -105,6 +65,7 @@ For manual removal commands, see [Uninstall manually](UNINSTALL.md).
 
 ## Guides & Reference
 
+- [Daily Use & Quick Reference](REFERENCE.md)
 - [Open WebUI Setup Guide](OPENWEBUI_SETUP.md)
 - [SearXNG Configuration](SEARXNG_CONFIG.md)
 - [LM Studio MCP Setup & Tips](LM_STUDIO_MCP.md)
